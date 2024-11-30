@@ -1,5 +1,5 @@
 import osmnx as ox
-from math import inf, sqrt
+from math import sqrt
 import matplotlib.pyplot as plt
 
 
@@ -40,7 +40,7 @@ def get_manhattan_graph(start_coord, end_coord):
     # Загружаем граф Манхэттена
     G = ox.graph_from_place('Manhattan, New York City, New York', network_type='drive')
 
-    # Находим ближайшие узлы 
+    # Находим ближайшие узлы
     start_node = find_nearest_node(G, start_lat, start_lon)
     end_node = find_nearest_node(G, end_lat, end_lon)
 
@@ -75,7 +75,7 @@ def dijkstra(graph, start, end):
     Реализация алгоритма Дейкстры для поиска кратчайшего пути
     """
     # Инициализация расстояний
-    distances = {node: inf for node in graph['nodes']}
+    distances = {node: float('inf') for node in graph['nodes']}
     distances[start] = 0
 
     # Инициализация предшественников для восстановления пути
@@ -86,7 +86,7 @@ def dijkstra(graph, start, end):
 
     while unvisited:
         # Находим узел с минимальным расстоянием
-        min_distance = inf
+        min_distance = float('inf')
         current_node = None
         for node in unvisited:
             if distances[node] < min_distance:
