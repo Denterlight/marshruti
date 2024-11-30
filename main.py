@@ -1,5 +1,4 @@
 import osmnx as ox
-import networkx as nx
 from math import inf, sqrt
 import matplotlib.pyplot as plt
 
