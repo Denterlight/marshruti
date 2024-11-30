@@ -40,7 +40,7 @@ def get_manhattan_graph(start_coord, end_coord):
     # Загружаем граф Манхэттена
     G = ox.graph_from_place('Manhattan, New York City, New York', network_type='drive')
 
-    # Находим ближайшие узлы с помощью нашей функции
+    # Находим ближайшие узлы 
     start_node = find_nearest_node(G, start_lat, start_lon)
     end_node = find_nearest_node(G, end_lat, end_lon)
 
