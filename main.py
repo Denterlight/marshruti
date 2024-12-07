@@ -1,6 +1,7 @@
 import osmnx as ox
 from math import sqrt
-import matplotlib.pyplot as plt
+import tkinter as tk
+from tkinter import ttk, messagebox
 
 
 def calculate_euclidean_distance(lat1, lon1, lat2, lon2):
@@ -52,7 +53,7 @@ def get_manhattan_graph(start_coord, end_coord):
     for node, data in G.nodes(data=True):
         nodes[str(node)] = {'lat': data['y'], 'lon': data['x']}
 
-    # Заполняем список ребер
+    # Заполняем список ребер(список словарей ребер)
     for u, v, data in G.edges(data=True):
         length = data.get('length', 0)
         edges.append({
@@ -138,22 +139,90 @@ def visualize_path(G, path):
                         figsize=(15, 10))
 
 
-def main():
-    print("Введите координаты начальной точки в формате 'широта,долгота' (например: 40.7829,-73.9654):")
-    start_coord = input().strip()
+# Создаем главное окно
+root = tk.Tk()
+root.title("Расчёт городских автоперевозок")
+root.geometry("400x300")
 
-    print("Введите координаты конечной точки в формате 'широта,долгота' (например: 40.7580,-73.9855):")
-    end_coord = input().strip()
+# Создаем рамку
+main_frame = ttk.Frame(root, padding="10")
+main_frame.grid(row=0, column=0)
 
-    graph_data = get_manhattan_graph(start_coord, end_coord)
-
-    shortest_distance, path = dijkstra(graph_data, graph_data['start_node'], graph_data['end_node'])
-
-    result = round(shortest_distance, 2)
-    print(f"Кратчайшее расстояние между точками: {result} метров")
-
-    print("Создаю визуализацию маршрута...")
-    visualize_path(graph_data['G'], path)
+# Создаем переменные для хранения данных визуализации
+graph_data = None
+path = None
 
 
-main()
+# Функция для расчета расстояния
+def calculate_distance():
+    global graph_data, path
+    try:
+        # Получаем координаты из полей ввода
+        start_coord = f"{start_lat.get()},{start_lon.get()}"
+        end_coord = f"{end_lat.get()},{end_lon.get()}"
+
+        # Проверяем формат координат
+        try:
+            start_lat_val, start_lon_val = map(float, start_coord.split(','))
+            end_lat_val, end_lon_val = map(float, end_coord.split(','))
+        except ValueError:
+            messagebox.showerror("Ошибка", "Неверный формат координат. Используйте числа для широты и долготы.")
+            return
+
+        # Получаем данные графа
+        graph_data = get_manhattan_graph(start_coord, end_coord)
+
+        # Рассчитываем кратчайший путь
+        shortest_distance, path = dijkstra(graph_data, graph_data['start_node'], graph_data['end_node'])
+
+        # Выводим результат
+        result = round(shortest_distance, 2)
+        result_label.config(text=f"Кратчайшее расстояние: {result} метров")
+
+        # Показываем кнопку визуализации
+        viz_button.grid()
+
+    except Exception as e:
+        messagebox.showerror("Ошибка", str(e))
+
+
+# Функция для визуализации
+def show_visualization():
+    try:
+        if graph_data and path:
+            visualize_path(graph_data['G'], path)
+    except Exception as e:
+        messagebox.showerror("Ошибка", f"Не удалось создать визуализацию: {str(e)}")
+
+
+# Создаем элементы интерфейса
+ttk.Label(main_frame, text="Начальная точка:").grid(row=0, column=0, columnspan=2, sticky=tk.W, pady=5)
+ttk.Label(main_frame, text="Широта:").grid(row=1, column=0, sticky=tk.W)
+start_lat = ttk.Entry(main_frame, width=15)
+start_lat.grid(row=1, column=1, padx=5)
+ttk.Label(main_frame, text="Долгота:").grid(row=1, column=2, sticky=tk.W)
+start_lon = ttk.Entry(main_frame, width=15)
+start_lon.grid(row=1, column=3, padx=5)
+
+ttk.Label(main_frame, text="Конечная точка:").grid(row=2, column=0, columnspan=2, sticky=tk.W, pady=5)
+ttk.Label(main_frame, text="Широта:").grid(row=3, column=0, sticky=tk.W)
+end_lat = ttk.Entry(main_frame, width=15)
+end_lat.grid(row=3, column=1, padx=5)
+ttk.Label(main_frame, text="Долгота:").grid(row=3, column=2, sticky=tk.W)
+end_lon = ttk.Entry(main_frame, width=15)
+end_lon.grid(row=3, column=3, padx=5)
+
+ttk.Label(main_frame, text="Пример: 40.7829, -73.9654").grid(row=4, column=0, columnspan=4, pady=5)
+
+calc_button = ttk.Button(main_frame, text="Рассчитать расстояние", command=calculate_distance)
+calc_button.grid(row=5, column=0, columnspan=4, pady=10)
+
+result_label = ttk.Label(main_frame, text="")
+result_label.grid(row=6, column=0, columnspan=4, pady=5)
+
+viz_button = ttk.Button(main_frame, text="Визуализация", command=show_visualization)
+viz_button.grid(row=7, column=0, columnspan=4, pady=10)
+viz_button.grid_remove()  # Скрываем кнопку
+
+
+root.mainloop()
